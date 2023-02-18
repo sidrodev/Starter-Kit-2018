@@ -18,6 +18,13 @@ I broke it down in simple steps to get you going.
 **Download Atom**
 	https://atom.io/
 
+note: Atom has been archived and is no longer in development. However, there are still other text editors and/or IDEs, if need be. You can choose from any of them to start coding. Here's few to choose from:
+	- **VSCode**: https://code.visualstudio.com/Download
+	- **Notepad++**: https://notepad-plus-plus.org/downloads/
+	- **Visual Studio**: https://visualstudio.microsoft.com/downloads/
+	- **Eclipse**: https://www.eclipse.org/downloads/
+	- **Sublime Text**: https://www.sublimetext.com/3
+
  **Install all the node packages** 
 On the root of this project run on your terminal (if you want you can do this with yarn but thats optional)
     
