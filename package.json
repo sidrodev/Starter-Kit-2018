@@ -40,7 +40,8 @@
   "scripts": {
     "bundle": "./node_modules/.bin/webpack",
     "production": "./node_modules/.bin/webpack -p",
-    "watch": "gulp",
+    "start": "gulp",
+    "watch": "gulp watch",
     "sass": "gulp styles",
     "js": "gulp webpack"
   },

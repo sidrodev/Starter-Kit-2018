@@ -1,62 +1,63 @@
-const gulp = require('gulp')
-const sass = require('gulp-sass')
-const autoprefixer = require('gulp-autoprefixer')
-// const concat = require('gulp-concat')
-// const babel = require('gulp-babel')
-// const watch = require('gulp-watch')
-const browserSync = require('browser-sync')
-const reload = browserSync.reload
-var exec = require('child_process').exec;
+const gulp = require("gulp");
+const sass = require("gulp-sass")(require("sass"));
+const autoprefixer = require("gulp-autoprefixer");
+const browserSync = require("browser-sync").create();
+const { series, watch } = require("gulp");
 
-gulp.task('default', ['styles', 'webpack', 'browser-sync'], () => {
-  gulp.watch('./assets/sass/**/*', ['styles'])
-  gulp.watch('./assets/js/**/*', ['webpack'])
-  gulp.watch(['./public/**/*', './public/*', '!public/js/**/.#*js', '!public/css/**/.#*css']).on('change', reload)
-})
+// Define paths for styles, scripts, and HTML
+const paths = {
+  styles: {
+    src: "assets/sass/**/*.scss",
+    dest: "public/css",
+  },
+  scripts: {
+    src: "assets/js/**/*",
+    dest: "public/js",
+  },
+  html: {
+    src: "public/**/*.html",
+  },
+};
 
-gulp.task('styles', () => {
-  gulp.src('assets/sass/**/*.scss')
+// Task to compile SCSS files to CSS and autoprefix it
+function styles() {
+  return gulp
+    .src(paths.styles.src)
+    .pipe(sass({ outputStyle: "compressed" }).on("error", sass.logError))
     .pipe(
-      sass({
-        outputStyle: 'compressed'
+      autoprefixer({
+        overrideBrowserslist: ["last 2 versions"],
       })
-      .on('error', sass.logError))
-    .pipe(autoprefixer({
-      browsers: ['last 2 versions']
-    }))
-    .pipe(gulp.dest('./public/css'))
-    .pipe(browserSync.stream())
-})
+    )
+    .pipe(gulp.dest(paths.styles.dest))
+    .pipe(browserSync.stream());
+}
 
-gulp.task('browser-sync', ['styles'], function () {
-  // THIS IS FOR SITUATIONS WHEN YOU HAVE ANOTHER SERVER RUNNING
-  // browserSync.init({
-  //   proxy: {
-  //     target: 'localhost:3000', // can be [virtual host, sub-directory, localhost with port]
-  //     ws: true // enables websockets
-  //   },
-  //   serveStatic: ['.', './public']
-  // })
+// Task to reload the browser when HTML, CSS, or JS files change
+function reloadBrowser(cb) {
+  browserSync.reload();
+  cb();
+}
 
+// Task to watch HTML, CSS, and JS files for changes and run appropriate tasks
+function watchFiles() {
+  // Initialize the browser-sync server
   browserSync.init({
-        server: './public',
-        notify: false,
-        open: false //change this to true if you want the broser to open automatically 
-    });
-})
+    server: {
+      baseDir: "./public",
+    },
+  });
 
-gulp.task('webpack', (cb) => {
-  exec('webpack', function (err, stdout, stderr) {
-      console.log(stdout);
-      console.log(stderr);
-      cb(err);
-    });
-})
+  // Watch for changes in SCSS files and run the styles task
+  watch(paths.styles.src, styles);
 
-// gulp.task('webpack', shell.task([
-//   'webpack'
-// ]))
+  // Watch for changes in JS files and reload the browser
+  watch(paths.scripts.src, series(reloadBrowser));
 
-// gulp.task('server', shell.task([
-//   'yarn run server'
-// ]))
+  // Watch for changes in HTML files and reload the browser
+  watch(paths.html.src, series(reloadBrowser));
+}
+
+// Expose tasks
+exports.watch = watchFiles; // The watch task to start the server and watch files for changes
+exports.default = series(styles); // The default task to compile styles and exit
